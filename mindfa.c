@@ -130,3 +130,34 @@ int main() {
 
     return 0;
 }
+
+
+
+output
+
+
+enter no of states:5
+enter no of symbols:2
+enter the transition table:
+s0 1 2
+s1 3 4
+s2 3 4
+s3 3 4
+s4 4 4
+enter the no of final states:1
+the final states are :
+3
+minimized dfa
+no of states: 4equivalent state
+s0 = {s0}
+s1 = {s1, s2}
+s2 = {s3}
+s3 = {s4}
+min trans table
+state   s0      s1
+s0      s1      s1
+s1      s2      s3
+s2      s2      s3
+s3      s3      s3
+
+final states s2
