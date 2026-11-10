@@ -9,7 +9,7 @@ pattern01.l(LEX)
 1 {return NUM1;}
 0 {return NUM0;}
 \n {return 0;}
-. ;
+. {return yytext[0];}   //(needed {return yytext[0];}  orelse it wouls exclude the a fom 0a1 and consider it as 01 so it will give valid eventhoug its invalid)
 %%
 
 int yywrap(){
