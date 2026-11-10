@@ -1,5 +1,29 @@
 %{
 #include <stdio.h>
+%}
+
+%%
+.*[jJ][oO][hH][nN].*    { printf("REJECTED : \"%s\" contains john\n", yytext); }
+[^\n]+                  { printf("ACCEPTED : \"%s\" does not contain john\n", yytext); }
+\n                      ;
+%%
+
+int main() {
+    printf("Name: johnny, substring to avoid: john (any case)\n");
+    printf("Enter strings, one per line (end with Ctrl+D):\n");
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+
+
+%{
+#include <stdio.h>
 #include <string.h>
 char key[5];
 %}
