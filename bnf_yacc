@@ -1,0 +1,104 @@
+bnf.l
+
+%{
+#include "y.tab.h"
+#include <string.h>
+%}
+
+%%
+[a-zA-Z0-9]+    { 
+                    // strdup duplicates the string in memory so it isn't lost
+                    yylval.str = strdup(yytext); 
+                    return ID; 
+                }
+[\t \n]         { /* Ignore whitespace */ }
+.               { return yytext[0]; }
+%%
+
+int yywrap() { return 1; }
+
+bnf.y
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int yylex();
+void yyerror(char *s);
+
+// Step 1: Define the AST Node Data Structure
+typedef struct node {
+    char *token;
+    struct node *left;
+    struct node *right;
+} node;
+
+// Step 2: Function to create a new tree node
+node* mknode(char *token, node *left, node *right) {
+    node *newnode = (node*)malloc(sizeof(node));
+    newnode->token = strdup(token);
+    newnode->left = left;
+    newnode->right = right;
+    return newnode;
+}
+
+// Step 3: Function to print the tree (Inorder)
+void printInorder(node *tree) {
+    if (tree != NULL) {
+        printInorder(tree->left);
+        printf("%s ", tree->token);
+        printInorder(tree->right);
+    }
+}
+%}
+
+/* Step 4: The Union upgrades yylval to handle multiple data types */
+%union {
+    char *str;           // Used for terminal tokens coming from Lex
+    struct node *nd;     // Used for non-terminal AST nodes built in YACC
+}
+
+// Map the datatypes to the tokens and rules
+%token <str> ID
+%type <nd> exp
+
+// Precedence rules to build the tree correctly
+%left '+' '-'
+%left '*' '/'
+
+%%
+// Start Rule: When parsing is done, print the tree!
+stmt: exp { 
+    printf("AST Generated Successfully!\nInorder Traversal: ");
+    printInorder($1); 
+    printf("\n"); 
+    exit(0); 
+} ;
+
+// BNF Grammar Rules generating AST Nodes
+exp: exp '+' exp { $$ = mknode("+", $1, $3); }
+   | exp '-' exp { $$ = mknode("-", $1, $3); }
+   | exp '*' exp { $$ = mknode("*", $1, $3); }
+   | exp '/' exp { $$ = mknode("/", $1, $3); }
+   | '(' exp ')' { $$ = $2; } /* Parentheses do not get their own nodes in an AST! */
+   | ID          { $$ = mknode($1, NULL, NULL); } /* Leaf node */
+   ;
+%%
+
+void yyerror(char *s) {
+    printf("Result: Invalid Expression!\n");
+    exit(1);
+}
+
+int main() {
+    printf("Enter an expression (e.g., a+b*c):\n");
+    yyparse();
+    return 0;
+}
+
+output
+
+enter the expression(eg.. a+b*c
+a+b*c
+abstract tree generated
+ inorder traversal: a+b*c
