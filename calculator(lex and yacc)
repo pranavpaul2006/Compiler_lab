@@ -16,6 +16,25 @@ int yywrap(){
 	return 1;
 }
 
+with logic operators 
+
+%{
+#include <stdlib.h>
+#include "y.tab.h"
+%}
+%%
+[0-9]+     { yylval = atoi(yytext); return NUMBER; }
+"&&"       { return AND; }
+"||"       { return OR; }
+"=="       { return EQ; }
+"!="       { return NE; }
+"<="       { return LE; }
+">="       { return GE; }
+[ \t\r]    ;
+\n         { return 0; }
+.          { return yytext[0]; }
+%%
+int yywrap() { return 1; }
 
 cal.y(YACC)
 
@@ -52,6 +71,58 @@ void yyerror(const char *s){
 	printf("errors: %s\n",s);
 }
 
+
+
+with logic operators 
+
+%{
+#include <stdio.h>
+int yylex(void);
+void yyerror(const char *s);
+%}
+
+%token NUMBER AND OR EQ NE LE GE
+
+%left OR
+%left AND
+%left EQ NE
+%left '<' '>' LE GE
+%left '+' '-'
+%left '*' '/'
+%right '!' UMINUS
+
+%%
+S : E               { printf("Result = %d\n", $1); }
+  ;
+
+E : E OR E          { $$ = $1 || $3; }
+  | E AND E         { $$ = $1 && $3; }
+  | E EQ E          { $$ = $1 == $3; }
+  | E NE E          { $$ = $1 != $3; }
+  | E '<' E         { $$ = $1 < $3; }
+  | E '>' E         { $$ = $1 > $3; }
+  | E LE E          { $$ = $1 <= $3; }
+  | E GE E          { $$ = $1 >= $3; }
+  | E '+' E         { $$ = $1 + $3; }
+  | E '-' E         { $$ = $1 - $3; }
+  | E '*' E         { $$ = $1 * $3; }
+  | E '/' E         { $$ = $1 / $3; }
+  | '!' E           { $$ = !$2; }
+  | '-' E %prec UMINUS   { $$ = -$2; }
+  | '(' E ')'       { $$ = $2; }
+  | NUMBER          { $$ = $1; }
+  ;
+%%
+
+int main() {
+    printf("Enter expression: ");
+    yyparse();
+    return 0;
+}
+
+void yyerror(const char *s) {
+    printf("Invalid expression\n");
+}
 
 
 output
